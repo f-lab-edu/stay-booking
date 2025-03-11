@@ -6,5 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MemberCouponRepository extends JpaRepository<MemberCoupon, Long> {
-    Boolean existsByUserIdAndCouponId(String userId, Long couponId);
+    Boolean existsByUserIdAndCouponEventId(String userId, Long couponEventId);
+
+    int countMemberCouponByCouponEventId(Long couponEventId);
 }

@@ -22,10 +22,21 @@ public class MemberCoupon {
     @Column(nullable = false)
     private Long couponId;
 
-    @Builder
+//    long값의 경우 null이 나은지 default 0으로 넣는게 나은지
+    @Column
+    private Long couponEventId;
+
+    @Builder(builderMethodName = "memberCouponSimpleBuilder")
     public MemberCoupon(String userId, Long couponId) {
         this.userId = userId;
         this.couponId = couponId;
+    }
+
+    @Builder(builderMethodName = "memberCouponWithEventIdBuilder")
+    public MemberCoupon(String userId, Long couponId, Long couponEventId) {
+        this.userId = userId;
+        this.couponId = couponId;
+        this.couponEventId = couponEventId;
     }
 
     @Override
