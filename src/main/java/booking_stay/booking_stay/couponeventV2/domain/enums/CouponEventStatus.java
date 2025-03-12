@@ -6,7 +6,6 @@ import lombok.Getter;
 public enum CouponEventStatus {
     Ready("RD"),
     Do("DO"),
-    Cancel("CN"),
     Finish("FN");
 
     private final String code;

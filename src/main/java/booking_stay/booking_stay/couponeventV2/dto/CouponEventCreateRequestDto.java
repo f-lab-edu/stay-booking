@@ -2,6 +2,7 @@ package booking_stay.booking_stay.couponeventV2.dto;
 
 import booking_stay.booking_stay.couponeventV2.domain.entity.CouponEvent;
 import booking_stay.booking_stay.couponeventV2.domain.enums.CouponEventStatus;
+import lombok.Builder;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +13,16 @@ public class CouponEventCreateRequestDto {
     private CouponEventStatus status;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+
+    @Builder
+    public CouponEventCreateRequestDto(String eventName, Long issuedCouponId, int maxQuantity, CouponEventStatus status, LocalDateTime startTime, LocalDateTime endTime) {
+        this.eventName = eventName;
+        this.issuedCouponId = issuedCouponId;
+        this.maxQuantity = maxQuantity;
+        this.status = status;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
 
     /**
      * Dto <-> Entity 변환 어떤 방식이 좋은지?

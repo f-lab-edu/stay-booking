@@ -14,6 +14,7 @@ public class MemberCoupon {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "member_coupon_id")
     private Long id;
 
     @Column(nullable = false)
