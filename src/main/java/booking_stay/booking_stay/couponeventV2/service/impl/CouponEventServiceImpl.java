@@ -74,7 +74,7 @@ public class CouponEventServiceImpl implements CouponEventService {
     }
 
     @Override
-    @Scheduled(fixedDelay = 500)
+//    @Scheduled(fixedDelay = 500)
     public void couponEventConsumer() {
         log.info("consumer is working");
 

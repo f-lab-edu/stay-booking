@@ -1,4 +1,4 @@
-package booking_stay.booking_stay.coupon;
+package booking_stay.booking_stay.common.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

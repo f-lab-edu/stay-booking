@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 class CouponEventServiceImplTest {
@@ -85,8 +86,8 @@ class CouponEventServiceImplTest {
 
         //then
         CouponEvent updatedCouponEvent = couponEventRepository.findCouponEventById(couponEventId).orElseThrow();
-        assertThat(updatedCouponEvent.getEventName()).isEqualTo(updateRequestDto.getEventName());
-        assertThat(updatedCouponEvent.getMaxQuantity()).isEqualTo(updateRequestDto.getMaxQuantity());
+        assertEquals(updateRequestDto.getEventName(), updatedCouponEvent.getEventName());
+        assertEquals(updateRequestDto.getMaxQuantity(), updatedCouponEvent.getMaxQuantity());
     }
 
     @Test
@@ -102,7 +103,7 @@ class CouponEventServiceImplTest {
         String result = couponEventService.couponEventPublisher(request);
 
         //then
-        assertThat(result).isEqualTo("참여 완료");
+        assertEquals("참여 완료",result);
     }
 
     @Test
@@ -121,16 +122,18 @@ class CouponEventServiceImplTest {
         entityManager.clear();
 //        테스트 실패하는데 테이블 확인해보니깐 coupoon_event_id가 null로 들어감
 
+        
+        //when
         CouponEventRequest duplicatedRequest = CouponEventRequest.builder()
                 .couponId(defaultCouponEvent.getIssuedCouponId())
                 .couponEventId(defaultCouponEvent.getId())
                 .userId("테스트아이디1")
                 .build();
-        //when
+        
         String result = couponEventService.couponEventPublisher(duplicatedRequest);
 
         //then
-        assertThat(result).isEqualTo("중복참여 불가");
+        assertEquals("중복참여 불가",result);
     }
 
 }

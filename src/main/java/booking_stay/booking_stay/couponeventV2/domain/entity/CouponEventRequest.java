@@ -15,4 +15,8 @@ public class CouponEventRequest {
         this.couponId = couponId;
         this.couponEventId = couponEventId;
     }
+
+    public String getRedisKey(String key){
+        return key + ":" + couponEventId;
+    }
 }
