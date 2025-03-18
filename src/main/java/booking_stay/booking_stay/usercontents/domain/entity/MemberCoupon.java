@@ -27,13 +27,7 @@ public class MemberCoupon {
     @Column
     private Long couponEventId;
 
-    @Builder(builderMethodName = "memberCouponSimpleBuilder")
-    public MemberCoupon(String userId, Long couponId) {
-        this.userId = userId;
-        this.couponId = couponId;
-    }
-
-    @Builder(builderMethodName = "memberCouponWithEventIdBuilder")
+    @Builder
     public MemberCoupon(String userId, Long couponId, Long couponEventId) {
         this.userId = userId;
         this.couponId = couponId;

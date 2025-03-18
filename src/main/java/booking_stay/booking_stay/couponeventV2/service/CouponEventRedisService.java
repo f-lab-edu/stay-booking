@@ -4,7 +4,7 @@ import booking_stay.booking_stay.couponeventV2.domain.entity.CouponEventRequest;
 
 public interface CouponEventRedisService {
 
-    String couponEventPublisher(CouponEventRequest request);
+    String couponEventProducer(CouponEventRequest request);
 
     void couponEventConsumer();
 }

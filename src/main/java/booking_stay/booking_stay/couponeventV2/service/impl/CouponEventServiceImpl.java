@@ -15,7 +15,6 @@ import booking_stay.booking_stay.usercontents.domain.repository.MemberCouponRepo
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,7 +96,7 @@ public class CouponEventServiceImpl implements CouponEventService {
     }
 
     private void issueCoupon(CouponEventRequest request){
-        MemberCoupon memberCoupon = MemberCoupon.memberCouponWithEventIdBuilder()
+        MemberCoupon memberCoupon = MemberCoupon.builder()
                 .couponId(request.getCouponId())
                 .userId(request.getUserId())
                 .couponEventId(request.getCouponEventId())
