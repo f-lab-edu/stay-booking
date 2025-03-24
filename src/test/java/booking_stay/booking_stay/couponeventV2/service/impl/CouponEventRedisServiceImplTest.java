@@ -41,7 +41,7 @@ class CouponEventRedisServiceImplTest {
                         .eventName("쿠폰지급이벤트1")
                         .issuedCouponId(1L)
                         .maxQuantity(3000)
-                        .status(CouponEventStatus.Do)
+                        .status(CouponEventStatus.DO)
                         .startTime(LocalDateTime.now().minusDays(2))
                         .endTime(LocalDateTime.now().plusDays(2))
                         .build();

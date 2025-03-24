@@ -7,4 +7,8 @@ public interface CouponEventRedisService {
     String couponEventProducer(CouponEventRequest request);
 
     void couponEventConsumer();
+
+    String trunOnCouponEvent(Long id);
+
+    String resetCouponEventCount(Long id);
 }

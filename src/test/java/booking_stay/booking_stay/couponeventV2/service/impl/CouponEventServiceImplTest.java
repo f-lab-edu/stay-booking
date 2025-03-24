@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
@@ -45,7 +44,7 @@ class CouponEventServiceImplTest {
                         .eventName("쿠폰지급이벤트1")
                         .issuedCouponId(1L)
                         .maxQuantity(1000)
-                        .status(CouponEventStatus.Ready)
+                        .status(CouponEventStatus.READY)
                         .startTime(LocalDateTime.now().minusDays(2))
                         .endTime(LocalDateTime.now().plusDays(2))
                         .build();
@@ -61,7 +60,7 @@ class CouponEventServiceImplTest {
                         .eventName("쿠폰지급이벤트3")
                         .issuedCouponId(3L)
                         .maxQuantity(3000)
-                        .status(CouponEventStatus.Do)
+                        .status(CouponEventStatus.DO)
                         .startTime(LocalDateTime.now().minusDays(2))
                         .endTime(LocalDateTime.now().plusDays(2))
                         .build();
@@ -120,14 +119,14 @@ class CouponEventServiceImplTest {
         memberCouponRepository.save(alreadyExistMemberCoupon);
         entityManager.flush();
         entityManager.clear();
-        
+
         //when
         CouponEventRequest duplicatedRequest = CouponEventRequest.builder()
                 .couponId(defaultCouponEvent.getIssuedCouponId())
                 .couponEventId(defaultCouponEvent.getId())
                 .userId("테스트아이디1")
                 .build();
-        
+
         String result = couponEventService.couponEventPublisher(duplicatedRequest);
 
         //then

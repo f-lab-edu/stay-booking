@@ -31,8 +31,12 @@ public class CouponEventRedisRepository {
         return redisTemplate.opsForZSet().add(COUPON_EVENT_QUEUE,  request, System.currentTimeMillis());
     }
 
+    public void resetCouponMaxQuantity(Long couponEventId , Integer quantity) {
+        redisTemplate.opsForValue().set(COUPON_EVENT_MAX_QUANTITY + ":" + couponEventId, quantity);
+    }
+
     public Boolean setCouponMaxQuantity(Long couponEventId , Integer quantity) {
-        return redisTemplate.opsForValue().setIfAbsent(COUPON_EVENT_MAX_QUANTITY + ":" + couponEventId, String.valueOf(quantity));
+        return redisTemplate.opsForValue().setIfAbsent(COUPON_EVENT_MAX_QUANTITY + ":" + couponEventId, quantity);
     }
     public Integer getCouponEventMaxQuantity(Long couponEventId) {
         return (Integer) redisTemplate.opsForValue().get(COUPON_EVENT_MAX_QUANTITY + ":" + couponEventId);

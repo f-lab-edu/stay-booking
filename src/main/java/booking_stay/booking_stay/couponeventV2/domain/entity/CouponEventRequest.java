@@ -21,4 +21,13 @@ public class CouponEventRequest {
         this.couponId = couponId;
         this.couponEventId = couponEventId;
     }
+
+    @Override
+    public String toString() {
+        return "CouponEventRequest{" +
+                "couponEventId=" + couponEventId +
+                ", userId='" + userId + '\'' +
+                ", couponId=" + couponId +
+                '}';
+    }
 }

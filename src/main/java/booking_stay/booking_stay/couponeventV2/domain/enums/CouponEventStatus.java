@@ -4,9 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum CouponEventStatus {
-    Ready("RD"),
-    Do("DO"),
-    Finish("FN");
+    READY("RD"),
+    DO("DO"),
+    FINISH("FN");
 
     private final String code;
 

@@ -9,6 +9,8 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
@@ -42,6 +44,14 @@ public class CouponEvent {
     @Column(nullable = false)
     private LocalDateTime endTime;
 
+    @CreatedDate
+    @Column(nullable = false)
+    private LocalDateTime createTime;
+
+    @LastModifiedDate
+    @Column(nullable = false)
+    private LocalDateTime updateTime;
+
     @Builder
     public CouponEvent(String eventName, Long issuedCouponId, int maxQuantity, CouponEventStatus status, LocalDateTime startTime, LocalDateTime endTime) {
         this.eventName = eventName;
@@ -57,7 +67,7 @@ public class CouponEvent {
     }
 
     public void update(CouponEventStatus currentStatus, CouponEventUpdateRequestDto requestDto) {
-        if (currentStatus.equals(CouponEventStatus.Do))
+        if (currentStatus.equals(CouponEventStatus.DO))
             throw new BookingException(HttpStatus.BAD_REQUEST, ErrorCode.INPROGRESS_ERROR);
 
         this.eventName = requestDto.getEventName();
