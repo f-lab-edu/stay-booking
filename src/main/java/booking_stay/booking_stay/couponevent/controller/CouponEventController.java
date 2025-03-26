@@ -1,7 +1,7 @@
 package booking_stay.booking_stay.couponevent.controller;
 
 import booking_stay.booking_stay.couponevent.domain.entity.CouponEventRequest;
-import booking_stay.booking_stay.couponevent.service.CouponEventRedisService;
+import booking_stay.booking_stay.couponevent.service.CouponEventFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,21 +10,21 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class CouponEventController {
 
-    private final CouponEventRedisService couponEventRedisService;
+    private final CouponEventFacade couponEventFacade;
 
     @PostMapping("/apply")
     public String applyCouponEvent(@RequestBody CouponEventRequest request) {
-        return couponEventRedisService.couponEventProducer(request);
+        return couponEventFacade.couponEventProducer(request);
     }
 
     @PutMapping("/trun-on/{id}")
     public String trunOnCouponEvent(@PathVariable Long id) {
-        return couponEventRedisService.trunOnCouponEvent(id);
+        return couponEventFacade.turnOnCouponEvent(id);
     }
 
     @PutMapping("/reset/{id}")
     public String resetCouponEventCount(@PathVariable Long id) {
-        return couponEventRedisService.trunOnCouponEvent(id);
+        return couponEventFacade.resetCouponEventCount(id);
     }
 
 

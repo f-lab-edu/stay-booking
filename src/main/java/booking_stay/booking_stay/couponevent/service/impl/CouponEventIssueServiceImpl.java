@@ -1,52 +1,77 @@
 package booking_stay.booking_stay.couponevent.service.impl;
 
+
+import booking_stay.booking_stay.common.BookingException;
+import booking_stay.booking_stay.common.ErrorCode;
+import booking_stay.booking_stay.couponevent.domain.entity.CouponEvent;
 import booking_stay.booking_stay.couponevent.domain.entity.CouponEventRequest;
-import booking_stay.booking_stay.couponevent.service.CouponEventIssueCommand;
-import booking_stay.booking_stay.couponevent.service.CouponEventIssueQuery;
+import booking_stay.booking_stay.couponevent.domain.repository.CouponEventRedisRepository;
+import booking_stay.booking_stay.couponevent.domain.repository.CouponEventRepository;
+import booking_stay.booking_stay.couponevent.service.CouponEventIssueService;
+import booking_stay.booking_stay.usercontents.domain.repository.MemberCouponRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
-public class CouponEventIssueServiceImpl implements CouponEventIssueCommand, CouponEventIssueQuery {
-    private final RedisTemplate<String, Object> redisTemplate;
-    private static final String COUPON_EVENT_QUEUE = "coupon_event_queue";
-    private static final String COUPON_EVENT_MAX_QUANTITY = "coupon_max_quantity";
+public class CouponEventIssueServiceImpl implements CouponEventIssueService {
+    private final CouponEventRedisRepository couponEventRedisRepository;
+    private final CouponEventRepository couponEventRepository;
+    private final MemberCouponRepository memberCouponRepository;
 
     @Override
-    public Boolean addQueue(CouponEventRequest request) {
-        return redisTemplate.opsForZSet().add(COUPON_EVENT_QUEUE,  request, System.currentTimeMillis());
+    public String couponEventProducer(CouponEventRequest couponEventRequest) {
+        log.info("Coupon Event Producer called");
+        log.info(couponEventRequest.toString());
+
+        int maxQuantity = getMaxQuantity(couponEventRequest);
+        if (maxQuantity < 1)
+            return "수량 소진";
+
+        if (checkDuplicate(couponEventRequest))
+            return "중복참여 불가";
+
+        return addQueue(couponEventRequest);
     }
 
     @Override
-    public void resetCouponMaxQuantity(Long couponEventId, Integer quantity) {
-        redisTemplate.opsForValue().set(COUPON_EVENT_MAX_QUANTITY + ":" + couponEventId, quantity);
+    public String turnOnCouponEvent(Long couponEventId) {
+        CouponEvent couponEvent = couponEventRepository.findCouponEventById(couponEventId)
+                .orElseThrow(()-> new BookingException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_RESULT));
+        couponEvent.changeStatusDo();
+
+        couponEventRedisRepository.setCouponMaxQuantity(couponEventId,couponEvent.getMaxQuantity());
+
+        return "200";
     }
 
     @Override
-    public Boolean setCouponMaxQuantity(Long couponEventId, Integer quantity) {
-        return redisTemplate.opsForValue().setIfAbsent(COUPON_EVENT_MAX_QUANTITY + ":" + couponEventId, quantity);
+    public void resetCouponEventCount(Long couponEventId) {
+        CouponEvent couponEvent = couponEventRepository.findCouponEventById(couponEventId).orElseThrow(()-> new BookingException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_RESULT));
+        couponEventRedisRepository.resetCouponMaxQuantity(couponEventId, couponEvent.getMaxQuantity());
     }
 
-    @Override
-    public Long decreaseCouponMaxQuantity(Long couponEventId) {
-        return redisTemplate.opsForValue().decrement(COUPON_EVENT_MAX_QUANTITY + ":" + couponEventId);
+    private int getMaxQuantity(CouponEventRequest request) {
+        Integer couponQuantity = couponEventRedisRepository.getCouponEventMaxQuantity(request.getCouponEventId());
+        if (couponQuantity==null)
+            throw new BookingException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_RESULT);
+
+        return couponQuantity;
     }
 
-    @Override
-    public Long getExistCouponEventCount() {
-        return redisTemplate.opsForZSet().zCard(COUPON_EVENT_QUEUE);
+    private String addQueue(CouponEventRequest request) {
+
+        Boolean addResult = couponEventRedisRepository.addQueue(request);
+        if (!addResult)
+            return "addQueue 실패";
+
+        return "addQueue 성공";
     }
 
-    @Override
-    public ZSetOperations.TypedTuple<Object> popMinOne() {
-        return redisTemplate.opsForZSet().popMin(COUPON_EVENT_QUEUE);
-    }
-
-    @Override
-    public Integer getCouponEventMaxQuantity(Long couponEventId) {
-        return (Integer) redisTemplate.opsForValue().get(COUPON_EVENT_MAX_QUANTITY + ":" + couponEventId);
+    private Boolean checkDuplicate(CouponEventRequest request) {
+        return memberCouponRepository.existsByUserIdAndCouponEventId(request.getUserId(), request.getCouponEventId());
     }
 }

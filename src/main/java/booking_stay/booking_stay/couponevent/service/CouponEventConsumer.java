@@ -3,6 +3,7 @@ package booking_stay.booking_stay.couponevent.service;
 import booking_stay.booking_stay.common.BookingException;
 import booking_stay.booking_stay.common.ErrorCode;
 import booking_stay.booking_stay.couponevent.domain.entity.CouponEventRequest;
+import booking_stay.booking_stay.couponevent.domain.repository.CouponEventRedisRepository;
 import booking_stay.booking_stay.usercontents.domain.entity.MemberCoupon;
 import booking_stay.booking_stay.usercontents.domain.repository.MemberCouponRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +22,7 @@ import java.util.Optional;
 public class CouponEventConsumer {
 
     private final MemberCouponRepository memberCouponRepository;
-    private final CouponEventIssueQuery couponEventIssueQuery;
-    private final CouponEventIssueCommand couponEventIssueCommand;
-
+    private final CouponEventRedisRepository couponEventRedisRepository;
 
     @Scheduled(fixedDelay = 1000)
     @Transactional
@@ -31,7 +30,7 @@ public class CouponEventConsumer {
         log.info("counsumer is working");
         log.info("");
 
-        if (couponEventIssueQuery.getExistCouponEventCount() < 1){
+        if (couponEventRedisRepository.getExistCouponEventCount() < 1){
             log.info("진행중인 쿠폰이벤트없음");
             return;
         }
@@ -42,7 +41,7 @@ public class CouponEventConsumer {
 
     private void issueCoupon() {
 //        대기열 가져오기
-        ZSetOperations.TypedTuple<Object> typedTuple = couponEventIssueQuery.popMinOne();
+        ZSetOperations.TypedTuple<Object> typedTuple = couponEventRedisRepository.popMinOne();
         Object object = typedTuple.getValue();
         if (!(object instanceof CouponEventRequest)) {
             log.warn("타입 불일치, object: {}", Optional.ofNullable(object).getClass().getName());
@@ -75,7 +74,7 @@ public class CouponEventConsumer {
     }
 
     private void checkCouponQuantity(CouponEventRequest request) {
-        Long couponQuantity = couponEventIssueCommand.decreaseCouponMaxQuantity(request.getCouponEventId());
+        Long couponQuantity = couponEventRedisRepository.decreaseCouponMaxQuantity(request.getCouponEventId());
 
         if (couponQuantity < 0)
             throw new BookingException(HttpStatus.BAD_REQUEST, ErrorCode.NO_REMAINING_COUPON);

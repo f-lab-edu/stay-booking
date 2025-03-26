@@ -66,6 +66,16 @@ public class CouponEvent {
         this.status = status;
     }
 
+    public void changeStatusDo(){
+        this.status = CouponEventStatus.DO;
+    }
+
+    public void changeStatusFinish() {
+        this.status = CouponEventStatus.FINISH;
+    }
+
+
+
     public void update(CouponEventStatus currentStatus, CouponEventUpdateRequestDto requestDto) {
         if (currentStatus.equals(CouponEventStatus.DO))
             throw new BookingException(HttpStatus.BAD_REQUEST, ErrorCode.INPROGRESS_ERROR);
