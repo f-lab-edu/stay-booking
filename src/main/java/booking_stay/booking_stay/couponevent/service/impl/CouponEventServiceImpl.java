@@ -1,68 +1,59 @@
 package booking_stay.booking_stay.couponevent.service.impl;
 
-import booking_stay.booking_stay.couponevent.domain.entity.CouponEventQueue;
-import booking_stay.booking_stay.couponevent.domain.entity.CouponEventRequest;
-import booking_stay.booking_stay.couponevent.service.CouponEventService;
-import booking_stay.booking_stay.usercontents.domain.entity.MemberCoupon;
+import booking_stay.booking_stay.common.BookingException;
+import booking_stay.booking_stay.common.ErrorCode;
+import booking_stay.booking_stay.couponevent.domain.entity.CouponEvent;
+import booking_stay.booking_stay.couponevent.domain.enums.CouponEventStatus;
+import booking_stay.booking_stay.couponevent.domain.repository.CouponEventRepository;
+import booking_stay.booking_stay.couponevent.dto.CouponEventCreateRequestDto;
+import booking_stay.booking_stay.couponevent.dto.CouponEventUpdateRequestDto;
+import booking_stay.booking_stay.couponevent.service.CouponEventCommand;
+import booking_stay.booking_stay.couponevent.service.CouponEventQuery;
 import booking_stay.booking_stay.usercontents.domain.repository.MemberCouponRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.util.concurrent.atomic.AtomicInteger;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class CouponEventServiceImpl implements CouponEventService {
+public class CouponEventServiceImpl implements CouponEventQuery, CouponEventCommand {
 
-    private final MemberCouponRepository memberCouponRepository;
-    private final CouponEventQueue couponEventQueue;
-    private static final AtomicInteger issuedCoupon = new AtomicInteger(0);
+    private final CouponEventRepository couponEventRepository;
 
     @Override
-    public String couponEventPublisher(CouponEventRequest request) {
-//        if (!checkDuplicate(request))
-//            return "이미 참여하셨습니다.";
-        couponEventQueue.addRequest(request);
-
-        return "대기열 참여";
+    @Transactional
+    public CouponEvent createCouponEvent(CouponEventCreateRequestDto requestDto) {
+        return couponEventRepository.save(requestDto.toEntity());
     }
 
     @Override
-    @Scheduled(fixedDelay = 1000)
-//    @SchedulerLock
-    public void couponEventConsumer() {
-        log.info("consumer is working");
+    @Transactional
+    public Long updateCouponEvent(Long couponEventId, CouponEventUpdateRequestDto requestDto) {
+        CouponEvent couponEvent = couponEventRepository.findById(couponEventId)
+                .orElseThrow(()-> new BookingException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_RESULT));
 
-        if (issuedCoupon.intValue()>=CouponEventQueue.MAX_SIZE) {
-            log.info("쿠폰이 모두 소진되었음");
-            return;
-        }
+        couponEvent.update(couponEvent.getStatus(), requestDto);
 
-        issueCoupon();
+        return couponEventId;
     }
 
-    private Boolean checkDuplicate(CouponEventRequest request) {
-        return memberCouponRepository.existsByUserIdAndCouponId(request.getUserId(), request.getCouponId());
+    @Override
+    @Transactional
+    public CouponEvent updateCouponEventStatusFinish(Long id) {
+
+        CouponEvent couponEvent = couponEventRepository.findCouponEventById(id).orElseThrow(()-> new BookingException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_RESULT));
+        couponEvent.changeStatusFinish();
+
+        return couponEvent;
     }
 
-    private void issueCoupon() {
-        CouponEventRequest request = couponEventQueue.getRequest();
-
-        if(request==null)
-            return;
-
-        MemberCoupon memberCoupon = MemberCoupon.builder()
-                .userId(request.getUserId())
-                .couponId(request.getCouponId())
-                .build();
-
-        MemberCoupon memberCouponReuslt = memberCouponRepository.save(memberCoupon);
-        log.info(memberCouponReuslt.toString());
-
-        issuedCoupon.incrementAndGet();
-        log.info(String.valueOf(issuedCoupon));
+    @Override
+    @Transactional(readOnly = true)
+    public CouponEvent getCouponEvent(Long couponId) {
+        return couponEventRepository.findById(couponId)
+                .orElseThrow(()-> new BookingException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_RESULT));
     }
 }

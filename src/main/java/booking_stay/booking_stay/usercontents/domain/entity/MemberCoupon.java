@@ -14,6 +14,7 @@ public class MemberCoupon {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "member_coupon_id")
     private Long id;
 
     @Column(nullable = false)
@@ -22,10 +23,15 @@ public class MemberCoupon {
     @Column(nullable = false)
     private Long couponId;
 
+//    long값의 경우 null이 나은지 default 0으로 넣는게 나은지
+    @Column
+    private Long couponEventId;
+
     @Builder
-    public MemberCoupon(String userId, Long couponId) {
+    public MemberCoupon(String userId, Long couponId, Long couponEventId) {
         this.userId = userId;
         this.couponId = couponId;
+        this.couponEventId = couponEventId;
     }
 
     @Override

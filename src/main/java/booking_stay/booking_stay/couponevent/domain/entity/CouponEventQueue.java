@@ -9,16 +9,10 @@ import java.util.Queue;
 @Slf4j
 @Component
 public class CouponEventQueue {
-
-    public static final int MAX_SIZE = 10000;
-
     private static final Queue<CouponEventRequest> queue = new LinkedList<>();
 
     public void addRequest(CouponEventRequest request) {
-        if (queue.size()<MAX_SIZE)
-            queue.offer(request);
-        else
-            log.info("full");
+        queue.offer(request);
     }
 
     public CouponEventRequest getRequest(){
