@@ -24,7 +24,7 @@ public class CouponEventConsumer {
     private final MemberCouponRepository memberCouponRepository;
     private final CouponEventRedisRepository couponEventRedisRepository;
 
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 10)
     @Transactional
     public void couponEventConsumer() {
         log.info("counsumer is working");
@@ -63,10 +63,15 @@ public class CouponEventConsumer {
                 .couponEventId(request.getCouponEventId())
                 .build();
 
-        checkCouponQuantity(request);
-
-        MemberCoupon memberCouponSaved = memberCouponRepository.save(memberCoupon);
-        log.info(memberCouponSaved.toString());
+        try{
+            checkCouponQuantity(request);
+            memberCouponRepository.save(memberCoupon);
+        }catch (Exception e){
+            couponEventRedisRepository.increaseCouponMaxQuantity(request.getCouponEventId());
+            log.error(e.getMessage());
+        }
+//        실패해도 dcrease된다 이것도 통합테스트로 만들고 로직도 구현해야한다
+//        동시성 늘려가면서 테스트 그리고 늘려갓을때 속도도 점점더 빨라지는 테스트가 케이스별로 쭉쭉
     }
 
     private Boolean checkDuplicate(CouponEventRequest request) {

@@ -45,11 +45,9 @@ public class CouponEvent {
     private LocalDateTime endTime;
 
     @CreatedDate
-    @Column(nullable = false)
     private LocalDateTime createTime;
 
     @LastModifiedDate
-    @Column(nullable = false)
     private LocalDateTime updateTime;
 
     @Builder

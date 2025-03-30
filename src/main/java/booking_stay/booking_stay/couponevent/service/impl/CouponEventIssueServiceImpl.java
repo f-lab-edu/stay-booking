@@ -68,7 +68,7 @@ public class CouponEventIssueServiceImpl implements CouponEventIssueService {
         if (!addResult)
             return "addQueue 실패";
 
-        return "addQueue 성공";
+        return "참여 완료";
     }
 
     private Boolean checkDuplicate(CouponEventRequest request) {

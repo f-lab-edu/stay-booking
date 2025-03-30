@@ -46,4 +46,8 @@ public class CouponEventRedisRepository {
         return redisTemplate.opsForValue().decrement(COUPON_EVENT_MAX_QUANTITY + ":" + couponEventId);
     }
 
+    public Long increaseCouponMaxQuantity(Long couponEventId) {
+        return redisTemplate.opsForValue().increment(COUPON_EVENT_MAX_QUANTITY + ":" + couponEventId);
+    }
+
 }

@@ -1,5 +1,6 @@
 package booking_stay.booking_stay.couponevent.service.impl;
 
+import booking_stay.booking_stay.common.BookingException;
 import booking_stay.booking_stay.couponevent.domain.entity.CouponEvent;
 import booking_stay.booking_stay.couponevent.domain.entity.CouponEventRequest;
 import booking_stay.booking_stay.couponevent.domain.enums.CouponEventStatus;
@@ -19,12 +20,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 class CouponEventServiceImplTest {
 
     @Autowired
     private CouponEventServiceImpl couponEventService;
+
+    @Autowired
+    private CouponEventIssueServiceImpl couponEventIssueService;
 
     @Autowired
     private MemberCouponRepository memberCouponRepository;
@@ -36,6 +41,7 @@ class CouponEventServiceImplTest {
     private EntityManager entityManager;
 
     private CouponEvent defaultCouponEvent;
+    private CouponEvent checkExceptionCouponEvent;
 
     @BeforeEach
     void setUp() {
@@ -50,6 +56,18 @@ class CouponEventServiceImplTest {
                         .build();
 
         defaultCouponEvent = couponEventService.createCouponEvent(requestDto);
+
+        CouponEventCreateRequestDto requestDto2 =
+                CouponEventCreateRequestDto.builder()
+                        .eventName("쿠폰지급이벤트1")
+                        .issuedCouponId(1L)
+                        .maxQuantity(1000)
+                        .status(CouponEventStatus.DO)
+                        .startTime(LocalDateTime.now().minusDays(2))
+                        .endTime(LocalDateTime.now().plusDays(2))
+                        .build();
+
+        checkExceptionCouponEvent = couponEventService.createCouponEvent(requestDto2);
     }
 
     @Test
@@ -87,50 +105,28 @@ class CouponEventServiceImplTest {
         CouponEvent updatedCouponEvent = couponEventRepository.findCouponEventById(couponEventId).orElseThrow();
         assertEquals(updateRequestDto.getEventName(), updatedCouponEvent.getEventName());
         assertEquals(updateRequestDto.getMaxQuantity(), updatedCouponEvent.getMaxQuantity());
+
     }
 
     @Test
-    @DisplayName("쿠폰 이벤트 참여 테스트")
-    public void couponPublisherTest() throws Exception{
+    @DisplayName("쿠폰이벤트 업데이트 실패")
+    public void updateCouponEventTestThrowException() throws Exception{
         //given
-        CouponEventRequest request = CouponEventRequest.builder()
-                .couponId(defaultCouponEvent.getIssuedCouponId())
-                .couponEventId(defaultCouponEvent.getId())
-                .userId("테스트아이디1")
+        Long couponEventId = checkExceptionCouponEvent.getId();
+        CouponEventUpdateRequestDto updateRequestDto = CouponEventUpdateRequestDto.builder()
+                .eventName(checkExceptionCouponEvent.getEventName() + "변경")
+                .maxQuantity(checkExceptionCouponEvent.getMaxQuantity()+1000)
+                .status(CouponEventStatus.FINISH)
+                .startTime(checkExceptionCouponEvent.getStartTime())
+                .endTime(checkExceptionCouponEvent.getEndTime())
                 .build();
         //when
-        String result = couponEventService.couponEventPublisher(request);
+//        couponEventService.updateCouponEvent(couponEventId, updateRequestDto);
 
         //then
-        assertEquals("참여 완료",result);
-    }
+        assertThrows(BookingException.class, () -> couponEventService.updateCouponEvent(couponEventId, updateRequestDto));
 
-    @Test
-    @DisplayName("쿠폰 이벤트 중복 참여 테스트")
-    @Transactional
-    public void couponPublisherDuplicateTest() throws Exception{
-        //given
-        MemberCoupon alreadyExistMemberCoupon = MemberCoupon.builder()
-                .userId("테스트아이디1")
-                .couponId(defaultCouponEvent.getIssuedCouponId())
-                .couponEventId(defaultCouponEvent.getId())
-                .build();
 
-        memberCouponRepository.save(alreadyExistMemberCoupon);
-        entityManager.flush();
-        entityManager.clear();
-
-        //when
-        CouponEventRequest duplicatedRequest = CouponEventRequest.builder()
-                .couponId(defaultCouponEvent.getIssuedCouponId())
-                .couponEventId(defaultCouponEvent.getId())
-                .userId("테스트아이디1")
-                .build();
-
-        String result = couponEventService.couponEventPublisher(duplicatedRequest);
-
-        //then
-        assertEquals("중복참여 불가",result);
     }
 
 }

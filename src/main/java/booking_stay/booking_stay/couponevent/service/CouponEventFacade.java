@@ -32,9 +32,7 @@ public class CouponEventFacade {
     public CouponEvent getCouponEvent(Long couponEventId) {
         return couponEventQuery.getCouponEvent(couponEventId);
     }
-
-
-
+    
     public String couponEventProducer(CouponEventRequest request) {
         return couponEventIssueService.couponEventProducer(request);
     }
